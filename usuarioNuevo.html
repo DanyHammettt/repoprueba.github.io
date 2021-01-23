@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usuario Nuevo</title>
-    <script
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Usuario Nuevo</title>
+	<script
       src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
     <script
       src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
@@ -13,110 +13,101 @@
     <script
       src="https://www.gstatic.com/firebasejs/7.24.0/firebase-storage.js"></script>
     <script src="js/init.js"></script>
-    <script type="module" src="cmp/mi-nav.js"></script>
-    <script type="module" src="cmp/mi-footer.js"></script>
-    <script type="module" src="cmp/mi-progreso.js"></script>
-    <link rel="stylesheet" href="css/estilos.css">
-  </head>
-  <body>
-    <form id="forma">
-      <mi-nav id="miNav"></mi-nav>
-      <header>
-        <a href="usuarios.html">Cancelar</a>
-        <h1>Usuario Nuevo</h1>
-        <button type="submit">Guardar</button>
-      </header>
-      <p><label>Cue <input name="cue" type="email"></label></p>
-      <p>
-        <label>
-          Avatar
-          <input name="avatar" type="file" accept=".png,.jpg,.jpeg,.gif">
-        </label>
-      </p>
-      <!-- Maneja una asociación a uno. -->
-      <p>
-        <label>
-          Pasatiempo
-          <select name="pasatiempo">
-            <option>Cargando…</option>
-          </select>
-        </label>
-      </p>
-      <!-- Maneja una asociación a muchos. -->
-      <fieldset>
-        <legend>Privilegios</legend>
-        <ul id="privilegios" class="checks">
-          <li>
-            <mi-progreso></mi-progreso>
-          </li>
-        </ul>
-      </fieldset>
-    </form>
-    <mi-footer></mi-footer>
-    <script type="module">
-      import { muestraError } from "./lib/util.js";
-      import { Fábrica } from "./js/Fabrica.js";
-      import { InfoPasatiempo } from "./js/InfoPasatiempo.js";
-      import { InfoPrivilegio } from "./js/InfoPrivilegio.js";
-      import { InfoUsuario } from "./js/InfoUsuario.js";
-      import { muestraSesión, muestraUsuarios } from "./js/navegacion.js";
+    <script type="module" src="inhtml/BarraNav.js"></script>
+    <script type="module" src="inhtml/footer.js"></script>
+    <script type="module" src="inhtml/Progreso.js"></script>
+    <link rel="stylesheet" type="css/estilos.css">
+</head>
+<body>
+	<form id="forma">
+		<nav id="miNav"></nav>
+		<header>
+			<a href="usuarios.html"></a>
+			<h1>Usuario NUevo</h1>
+			<button type="submit">Guardar</button>
+		</header>
+		<p><label>Correo Gmail<input type="email" name="cue"></label></p>
+		<p>
+			<label>
+				Imagen
+				<input type="file" name="avatar" accept=".png,.jpg,.jpeg,.gif">
+			</label>
+		</p>
+		<p>
+			<label>
+				Producto
+				<select name="almacen">
+					<option>Cargando...</option>
+				</select>
+			</label>
+		</p>
+		<fieldset>
+			<legend>Acceso</legend>
+			<ul id="privilegios" class="checks">
+				<li>
+					<barra-progreso></barra-progreso>
+				</li>
+			</ul>
+		</fieldset>
+	</form>
+	<pie></pie>
 
-      const ctrlSesión = Fábrica.instancia.ctrlSesión;
-      const ctrlUsuarios = Fábrica.instancia.ctrlUsuarios;
-      const foráneas = Fábrica.instancia.foráneasDeUsuarios;
+	<script type="module">
+		import { muestraError } from "./lib/util.js";
+		import { Fabrica } from "./js/General.js";
+		import { InfoAlmacen } from "./js/InfoAlmacen.js";
+		import { InfoUsuario } from "./js/InfoUsuario.js";
+		import { MuestraSesion, MuestraUsuarios } from "./js/Navegacion.js";
 
-      protege();
-      async function protege() {
-        try {
-          const usuarioAutorizado = await ctrlSesión.protege("Usuarios");
-          miNav.protege(usuarioAutorizado.privilegios);
-          forma.addEventListener("submit", guarda);
-          ctrlUsuarios.
-            foráneas(muestraError, muestraPasatiempos, muestraPrivilegios);
-        } catch (error) {
-          muestraError(error)
-          muestraSesión();
-        }
-      }
+		const ControlSesion = Fabrica.instancia.ControlSesion;
+		const ControlUsuario = Fabrica.instancia.ControlUsuario;
+		const foraneas = Fabrica.instancia.foraneasDeUsuario;
 
-      /** @param {InfoPasatiempo[]} pasatiempos */
-      function muestraPasatiempos(pasatiempos) {
-        foráneas.muestraPasatiempos(forma.pasatiempo, "", pasatiempos);
-      }
+		protege();
+		async function protege() {
+			try{
+				const usuarioAutorizado = await ControlSesion.protege("usuarios");
+				miNav.protege(usuarioAutorizado.privilegios);
+				forma.addEventListener("submit", guarda);
+				ControlUsuario.foraneas(muestraError, muestraAlmacenes, muestraPrivilegios);
+			} catch (error){
+				muestraError(error)
+				MuestraSesion();
+			}
+		}
 
-      /** @param {InfoPrivilegio[]} privs */
-      function muestraPrivilegios(privs) {
-        foráneas.muestraPrivilegios(privilegios, [], privs);
-      }
+		function muestraAlmacenes(almacenes) {
+			foraneas.muestraAlmacenes(forma.almacen, "", almacenes);
+		}
 
-      /** @param {Event} evt */
-      async function guarda(evt) {
-        try {
-          evt.preventDefault();
-          const data = new FormData(forma);
-          const pasatiempo = new InfoPasatiempo({
-            id: data.get("pasatiempo"),
-            nombre: null
-          });
-          const privilegios = data.getAll("privilegios").
-            map(id => new InfoPrivilegio({
-              nombre: id,
-              descripción: null
-            }));
-          /**@type {InfoUsuario} */
-          const modelo = new InfoUsuario({
-            email: data.get("cue"),
-            avatar: data.get("avatar"),
-            urlDeAvatar: null,
-            pasatiempo,
-            privilegios
-          });
-          await ctrlUsuarios.agrega(modelo);
-          muestraUsuarios();
-        } catch (error) {
-          muestraError(error);
-        }
-      }
-    </script>
-  </body>
+		function muestraPrivilegios(privs) {
+			foraneas.muestraPrivilegios(privilegios, [], privs);
+		}
+
+		async function guarda(evt) {
+			try{
+				evt.preventDefault();
+				const data = new FormData(forma);
+				const almacen = new InfoAlmacen({
+					id: data.get("almacen"),
+					nombre: null
+				});
+				const privilegios = data.getAll("privilegios").map(id => new InfoPrivilegios({
+					nombre: id,
+					descripcion: null
+				}));
+				const modelo = new InfoUsuario({
+					email: data.get("cue"),
+					avatar: data.get("avatar"),
+					urlDeAvatar: null,
+					almacen,
+					privilegios
+				});
+				await ControlUsuario.agregar(modelo);
+			} catch	(error){
+				muestraError(error);
+			}
+		}
+	</script>
+</body>
 </html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Almacen</title>
+	<script
+      src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/7.24.0/firebase-auth.js"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/7.24.0/firebase-storage.js"></script>
+    <script src="js/init.js"></script>
+    <script type="module" src="inhtml/BarraNav.js"></script>
+    <script type="module" src="inhtml/footer.js"></script>
+    <link rel="stylesheet" type="css/estilos.css">
+</head>
+<body>
+	<form id="forma">
+		<nav id="miNav"></nav>
+		<header>
+			<a href="almacenes.html">Cancelar</a>
+			<h1>Almacen</h1>
+			<button id="submit">Guardar</button>
+			<button id="eliminar">Borrar</button>
+		</header>
+		<p>
+			<label>
+				Nombre
+				<input type="text" name="nombre" value="Cargando...">
+			</label>
+		</p>
+	</form>
+	<pie></pie>
+	<script type="module">
+		import { Fabrica } from "./js/General.js";
+		import { muestraError } from "./lib/util.js";
+		import { InfoAlmacen } from "./js/InfoAlmacen.js";
+		import { MuestraAlmacenes, MuestraSesion } from "./js/navegacion.js";
+
+		const ControlSesion = Fabrica.instancia.ControlSesion;
+		const ControlAlmacenes = Fabrica.instancia.ControlAlmacenes;
+
+		const params = new URL(location.href).searchParams;
+		const id= params.get("id");
+
+		protege();
+		async function protege() {
+			try{
+				const usuarioAutorizado = await ControlSesion.protege("Almacenes");
+				miNav.protege(usuarioAutorizado.privilegios);
+				busca();
+			} catch (error){
+				muestraError(error)
+				MuestraSesion();
+			}
+		}
+
+		async function busca() {
+			try{
+				const modelo = await ControlAlmacenes.busca(id);
+				forma.nombre.value = modelo.nombre;
+				forma.addEventListener("submit", guarda);
+				eliminar.addEventListener("click",elimina);
+			} catch (e){
+				muestraError(e);
+			}
+		}
+
+		async function guardar(evt) {
+			try{
+				evt.preventDefault();
+				const data = new FormData(forma);
+				const modelo = new InfoAlmacen({
+					id,
+					nombre: data.get("nombre")
+				});
+				await ControlAlmacenes.modifica(modelo);
+				MuestraAlmacenes();
+			} catch (error){
+				muestraError(error);
+			}
+		}
+
+		async function elimina() {
+			try{
+				if(confirm("Confirmar la eliminacion")) {
+					await ControlAlmacenes.elimina(id);
+					MuestraAlmacenes();
+				}
+			} catch (e) {
+				procesaError(e);
+			}
+		}
+	</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Usuarios</title>
+	<title>Almacen</title>
 	<script
       src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
     <script
@@ -21,10 +21,10 @@
 <body>
 	<nav id="miNav"></nav>
 	<header>
-		<h1>Usuarios</h1>
-		<a href="usuarioNuevo.html">Crear Nuevo</a>
+		<h1>Almacen</h1>
+		<a href="almacenNuevo.html">Agregar Producto</a>
 	</header>
-	<ul id="lista" class="lista con_imagen">
+	<ul id="lista" class="lista">
 		<li>
 			<barra-progreso></barra-progreso>
 		</li>
@@ -34,45 +34,34 @@
 	<script type="module">
 		import { Fabrica } from "./js/General.js";
 		import { cod, muestraError } from "./lib/util.js";
+		import { InfoAlmacen } from "./js/InfoAlmacen.js";
 		import { InfoUsuario } from "./js/InfoUsuario.js";
 		import { MuestraSesion } from "./js/Navegacion.js";
 
 		const ControlSesion = Fabrica.instancia.ControlSesion;
-		const ControlUsuarios = Fabrica.instancia.ControlUsuarios;
-		const foraneas = Fabrica.instancia.foraneasDeUsuario;
+		const ControlAlmacenes = Fabrica.instancia.ControlAlmacenes;
 
 		protege();
 		async function protege() {
 			try{
-				const usuarioAutorizado = await ControlSesion.protege("Usuarios");
+				const usuarioAutorizado = await ControlSesion.protege("Almacenes");
 				miNav.protege(usuarioAutorizado.privilegios);
-				ControlUsuarios.consulta(muestraError, ,muestraUsuarios);
+				ControlAlmacenes.consulta(muestraError, muestraAlmacenes);
 			} catch (error){
-				muestraError(error);
+				muestraError(error)
 				MuestraSesion();
 			}
 		}
 
-		function muestraUsuarios(usuarios) {
-			lista.innerHTML = usuarios.map(u => {
-				const parametros = new URLSearchParams();
-				parametros.append("id", u.email);
-				const nombre = u.parametros ? u.almacen.nombre: "";
-				const privilegios = u.privilegios.map(p => foraneas.renderPrivilegio(p)).join("<br>");
-				 return (/* html */
-           		 `<li>
-              		<a href="usuario.html?${parametros}">
-               		 <span class="marco">
-                 	 <img src="${cod(u.urlDeAvatar)}" alt="Falta el Avatar">
-               		 </span>
-                	<span>
-                 	 <strong>${cod(u.email)}</strong><br>
-                  	${cod(nombre)}<br>
-                  	${privilegios}
-               	 </span>
-              </a>
-            </li>`);
-        }).join("");
+		function muestraAlmacenes(almacenes) {
+			lista.innerHTML = almacenes.map(p => {
+				const parametros = new URLSearchParams(); parametros.append("id", p.id);
+				return (/* html */
+					`<li>
+					<a href="almacen.html?${parametros}"><strong>${cod(p.nombre)}</strong></a>
+					</li>`);
+			}).join("");
+		}
 	</script>
 </body>
 </html>
